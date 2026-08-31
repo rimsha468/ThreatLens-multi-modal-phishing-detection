@@ -1,0 +1,992 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ThreatLens - Security Scanner</title>
+
+<style>
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    background: #08090c;
+    color: #eef1f4;
+    font-family: Arial, Helvetica, sans-serif;
+    min-height: 100vh;
+}
+
+a {
+    color: inherit;
+}
+
+/* Header */
+.site-header {
+    height: 74px;
+    padding: 0 6%;
+    border-bottom: 1px solid #1f242c;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.logo {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.logo-mark {
+    width: 36px;
+    height: 36px;
+    border: 1px solid #2ee88f;
+    border-radius: 8px;
+    color: #2ee88f;
+    font-size: 19px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.logo-text {
+    font-size: 18px;
+    font-weight: 600;
+    letter-spacing: .5px;
+}
+
+.logo-text small {
+    display: block;
+    font-size: 8px;
+    font-weight: normal;
+    color: #5c6470;
+    letter-spacing: 2px;
+    margin-top: 2px;
+}
+
+.status-pill {
+    font-size: 10px;
+    color: #7c848f;
+    letter-spacing: .5px;
+}
+
+.status-pill .dot {
+    display: inline-block;
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: #2ee88f;
+    margin-right: 6px;
+}
+
+/* Layout */
+main {
+    width: min(1040px, 90%);
+    margin: 0 auto;
+}
+
+/* Hero */
+.hero {
+    padding: 80px 10px 50px;
+    text-align: center;
+}
+
+.hero .eyebrow {
+    display: inline-block;
+    padding: 7px 14px;
+    border: 1px solid #24352c;
+    border-radius: 30px;
+    color: #2ee88f;
+    font-size: 9px;
+    letter-spacing: 1px;
+    margin-bottom: 22px;
+}
+
+.hero h1 {
+    font-size: clamp(40px, 6.5vw, 66px);
+    line-height: 1.05;
+    letter-spacing: -2px;
+}
+
+.hero h1 .accent {
+    color: #2ee88f;
+}
+
+.hero p {
+    max-width: 560px;
+    margin: 22px auto 0;
+    color: #838c97;
+    line-height: 1.7;
+}
+
+/* Card */
+.card {
+    background: #0d1117;
+    border: 1px solid #1f242c;
+    border-radius: 14px;
+    padding: 28px;
+}
+
+.card + .card {
+    margin-top: 22px;
+}
+
+.card-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 22px;
+}
+
+.card-head .eyebrow-sm {
+    font-size: 9px;
+    letter-spacing: 1.5px;
+    color: #666f7a;
+}
+
+.card-head h2 {
+    font-size: 19px;
+    margin-top: 6px;
+}
+
+.ready-tag {
+    color: #2ee88f;
+    font-size: 9px;
+    letter-spacing: .5px;
+}
+
+/* Tabs */
+.tabs {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+    margin-bottom: 26px;
+}
+
+.tab {
+    padding: 16px;
+    border: 1px solid #1f242c;
+    border-radius: 9px;
+    background: #10141a;
+    color: #eef1f4;
+    text-align: left;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-family: inherit;
+    transition: .2s ease;
+}
+
+.tab:hover {
+    border-color: #2ee88f;
+    transform: translateY(-1px);
+}
+
+.tab.active {
+    border-color: #2ee88f;
+    background: #0f1a14;
+}
+
+.tab .icon {
+    font-size: 20px;
+}
+
+.tab strong {
+    display: block;
+    font-size: 13px;
+}
+
+.tab small {
+    display: block;
+    margin-top: 3px;
+    color: #626b76;
+    font-size: 10px;
+}
+
+.tab .arrow {
+    margin-left: auto;
+    color: #4c5560;
+}
+
+/* Input panels */
+.panel-label {
+    display: block;
+    margin-bottom: 8px;
+    color: #666f7a;
+    font-size: 9px;
+    letter-spacing: 1px;
+}
+
+.url-field {
+    display: flex;
+    align-items: center;
+    padding: 0 13px;
+    border: 1px solid #1f242c;
+    border-radius: 8px;
+    background: #07090c;
+    color: #2ee88f;
+    transition: .2s ease;
+}
+
+.url-field:focus-within {
+    border-color: #2ee88f;
+    box-shadow: 0 0 0 2px rgba(46, 232, 143, .05);
+}
+
+.url-field input {
+    flex: 1;
+    background: transparent;
+    border: 0;
+    outline: 0;
+    color: #eef1f4;
+    font: inherit;
+    font-size: 14px;
+    padding: 15px 8px;
+}
+
+.email-subject {
+    width: 100%;
+    height: 52px;
+    padding: 0 15px;
+    border: 1px solid #1f242c;
+    border-radius: 8px;
+    background: #07090c;
+    color: #eef1f4;
+    font-family: inherit;
+    font-size: 14px;
+    outline: none;
+    transition: .2s ease;
+}
+
+.email-subject::placeholder {
+    color: #4f5862;
+}
+
+.email-subject:focus {
+    border-color: #2ee88f;
+    box-shadow: 0 0 0 2px rgba(46, 232, 143, .05);
+}
+
+textarea.email-field {
+    width: 100%;
+    min-height: 180px;
+    padding: 15px;
+    border: 1px solid #1f242c;
+    border-radius: 8px;
+    background: #07090c;
+    color: #eef1f4;
+    font-family: inherit;
+    font-size: 14px;
+    resize: vertical;
+    outline: none;
+    transition: .2s ease;
+}
+
+textarea.email-field::placeholder {
+    color: #4f5862;
+}
+
+textarea.email-field:focus {
+    border-color: #2ee88f;
+    box-shadow: 0 0 0 2px rgba(46, 232, 143, .05);
+}
+
+.hidden {
+    display: none;
+}
+
+/* Scan button */
+.scan-btn {
+    width: 100%;
+    margin-top: 16px;
+    padding: 15px;
+    border: 0;
+    border-radius: 8px;
+    background: #2ee88f;
+    color: #06110b;
+    font-weight: bold;
+    letter-spacing: .5px;
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 14px;
+    transition: .2s ease;
+}
+
+.scan-btn:hover {
+    opacity: .9;
+    transform: translateY(-1px);
+}
+
+.scan-btn:disabled {
+    opacity: .6;
+    cursor: not-allowed;
+    transform: none;
+}
+
+/* Result card */
+.risk-badge {
+    padding: 7px 11px;
+    border-radius: 6px;
+    background: #161a20;
+    color: #a5adb7;
+    font-size: 9px;
+    letter-spacing: .5px;
+    font-weight: bold;
+    transition: .2s ease;
+}
+
+.result-body {
+    display: flex;
+    align-items: center;
+    gap: 46px;
+}
+
+/* Circular risk progress */
+.score-ring {
+    text-align: center;
+    flex-shrink: 0;
+}
+
+.ring {
+    --risk-progress: 0%;
+    width: 140px;
+    height: 140px;
+    border-radius: 50%;
+    background: conic-gradient(#2ee88f var(--risk-progress), #252b33 var(--risk-progress));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    transition: background 0.8s ease;
+}
+
+.ring::before {
+    content: "";
+    position: absolute;
+    width: 126px;
+    height: 126px;
+    border-radius: 50%;
+    background: #0d1117;
+}
+
+.ring-content {
+    position: relative;
+    z-index: 2;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.score-ring .ring strong {
+    font-size: 42px;
+    line-height: 1;
+}
+
+.score-ring .ring span {
+    color: #838c97;
+    font-size: 11px;
+    margin-top: 4px;
+}
+
+.score-ring p {
+    margin-top: 12px;
+    color: #666f7a;
+    font-size: 9px;
+    letter-spacing: 1px;
+}
+
+/* Result details */
+.result-details {
+    flex: 1;
+}
+
+.result-details h3 {
+    font-size: 19px;
+    margin-bottom: 9px;
+}
+
+.result-details p {
+    color: #838c97;
+    line-height: 1.6;
+}
+
+/* Flags */
+.flags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 7px;
+    margin-top: 16px;
+}
+
+.flags span {
+    padding: 7px 10px;
+    border-radius: 6px;
+    background: #161a20;
+    color: #a5adb7;
+    font-size: 10px;
+    border: 1px solid #20252d;
+}
+
+.flags span.safe {
+    color: #2ee88f;
+    background: #0d1913;
+    border-color: #1d3c2d;
+}
+
+.flags span.warning {
+    color: #f4b942;
+    background: #19160d;
+    border-color: #3d3218;
+}
+
+.flags span.danger {
+    color: #ff6b6b;
+    background: #1c1010;
+    border-color: #3d1e1e;
+}
+
+.flags span.info {
+    color: #9ca8b5;
+    background: #14181e;
+}
+
+/* AI note */
+.ai-note {
+    margin-top: 26px;
+    padding: 16px;
+    border-left: 3px solid #2ee88f;
+    border-radius: 6px;
+    background: #0f141a;
+}
+
+.ai-note strong {
+    display: block;
+    margin-bottom: 8px;
+    color: #2ee88f;
+    font-size: 10px;
+    letter-spacing: 1px;
+}
+
+.ai-note p {
+    color: #929aa4;
+    font-size: 13px;
+    line-height: 1.7;
+}
+
+/* Footer */
+footer {
+    width: min(1040px, 90%);
+    margin: 32px auto;
+    display: flex;
+    justify-content: space-between;
+    color: #4a5158;
+    font-size: 9px;
+    letter-spacing: .5px;
+}
+
+/* Responsive */
+@media (max-width: 700px) {
+    .tabs {
+        grid-template-columns: 1fr;
+    }
+    .result-body {
+        flex-direction: column;
+        text-align: center;
+    }
+    .result-details {
+        width: 100%;
+    }
+    .flags {
+        justify-content: center;
+    }
+    footer {
+        flex-direction: column;
+        gap: 8px;
+    }
+}
+</style>
+</head>
+
+<body>
+
+<header class="site-header">
+    <div class="logo">
+        <div class="logo-mark">&#8961;</div>
+        <div class="logo-text">
+            ThreatLens
+            <small>AI SECURITY SCANNER</small>
+        </div>
+    </div>
+    <div class="status-pill">
+        <span class="dot"></span>
+        SYSTEM ONLINE
+    </div>
+</header>
+
+<main>
+
+<section class="hero">
+    <div class="eyebrow">AI-POWERED THREAT DETECTION</div>
+    <h1>
+        Find the threat<br>
+        <span class="accent">before it finds you.</span>
+    </h1>
+    <p>Analyze suspicious URLs and emails using machine learning and AI-powered threat analysis.</p>
+</section>
+
+<section class="card">
+    <div class="card-head">
+        <div>
+            <div class="eyebrow-sm">NEW SCAN</div>
+            <h2>What do you want to investigate?</h2>
+        </div>
+        <div class="ready-tag">SCAN READY</div>
+    </div>
+
+    <div class="tabs">
+        <button class="tab active" data-type="url">
+            <span class="icon">&#128279;</span>
+            <span>
+                <strong>URL</strong>
+                <small>Check suspicious links</small>
+            </span>
+            <span class="arrow">&rarr;</span>
+        </button>
+
+        <button class="tab" data-type="email">
+            <span class="icon">&#9993;</span>
+            <span>
+                <strong>EMAIL</strong>
+                <small>Detect phishing &amp; scams</small>
+            </span>
+            <span class="arrow">&rarr;</span>
+        </button>
+    </div>
+
+    <div class="input-panel" data-panel="url">
+        <label class="panel-label">URL TO ANALYZE</label>
+        <div class="url-field">
+            <span>https://</span>
+            <input id="urlInput" type="text" placeholder="example.com/login">
+        </div>
+    </div>
+
+    <div class="input-panel hidden" data-panel="email">
+        <label class="panel-label">EMAIL SUBJECT</label>
+        <input id="emailSubject" type="text" class="email-subject" placeholder="Enter the email subject...">
+
+        <label class="panel-label" style="margin-top: 16px;">EMAIL BODY</label>
+        <textarea id="emailBody" class="email-field" placeholder="Paste the full email body here..."></textarea>
+    </div>
+
+    <button class="scan-btn" id="scanBtn">SCAN FOR THREATS &rarr;</button>
+</section>
+
+<section class="card" id="resultCard">
+    <div class="card-head">
+        <div>
+            <div class="eyebrow-sm">SCAN RESULT</div>
+            <h2>Threat assessment</h2>
+        </div>
+        <div class="risk-badge">READY</div>
+    </div>
+
+    <div class="result-body">
+        <div class="score-ring">
+            <div class="ring" id="riskRing" style="--risk-progress: 0%;">
+                <div class="ring-content">
+                    <strong id="riskScore">--</strong>
+                    <span>/100</span>
+                </div>
+            </div>
+            <p>RISK SCORE</p>
+        </div>
+
+        <div class="result-details">
+            <h3 id="resultTitle">Waiting for scan</h3>
+            <p id="resultDescription">Enter a URL or email above and start a security scan.</p>
+            <div class="flags" id="resultFlags">
+                <span class="info">🔎 Ready for analysis</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="ai-note">
+        <strong>&#10022; THREATLENS ANALYSIS</strong>
+        <p id="aiText">ThreatLens combines machine learning, security indicators and threat intelligence to analyze suspicious content.</p>
+    </div>
+</section>
+
+</main>
+
+<footer>
+    <span>ThreatLens v0.1</span>
+    <span>ML ENGINE &middot; AI ANALYSIS &middot; SECURE SCANNING</span>
+</footer>
+
+<script>
+
+// Tab switching
+var tabs = document.querySelectorAll('.tab');
+var panels = document.querySelectorAll('.input-panel');
+
+tabs.forEach(function (tab) {
+    tab.addEventListener('click', function () {
+        tabs.forEach(function (t) { t.classList.remove('active'); });
+        tab.classList.add('active');
+
+        var type = tab.getAttribute('data-type');
+        panels.forEach(function (panel) {
+            panel.classList.toggle('hidden', panel.getAttribute('data-panel') !== type);
+        });
+    });
+});
+
+// Result helpers
+function getRiskClass(score) {
+    if (score >= 70) return 'danger';
+    if (score >= 30) return 'warning';
+    return 'safe';
+}
+
+function updateRiskProgress(displayScore, riskClass) {
+    var ring = document.getElementById('riskRing');
+    var score = Math.max(0, Math.min(100, Number(displayScore) || 0));
+
+    ring.style.setProperty('--risk-progress', score + '%');
+
+    if (riskClass === 'danger') {
+        ring.style.background = 'conic-gradient(#ff6b6b ' + score + '%, #252b33 ' + score + '%)';
+    } else if (riskClass === 'warning') {
+        ring.style.background = 'conic-gradient(#f4b942 ' + score + '%, #252b33 ' + score + '%)';
+    } else {
+        ring.style.background = 'conic-gradient(#2ee88f ' + score + '%, #252b33 ' + score + '%)';
+    }
+}
+
+function updateResultBadge(riskLevel) {
+    var riskBadge = document.querySelector('.risk-badge');
+    var level = (riskLevel || 'Unknown').toLowerCase();
+
+    riskBadge.textContent = level.toUpperCase() + ' RISK';
+
+    if (level === 'high') {
+        riskBadge.style.background = '#2a1111';
+        riskBadge.style.color = '#ff6b6b';
+    } else if (level === 'medium') {
+        riskBadge.style.background = '#211b0c';
+        riskBadge.style.color = '#f4b942';
+    } else {
+        riskBadge.style.background = '#0d1913';
+        riskBadge.style.color = '#2ee88f';
+    }
+}
+
+function updateResultScore(riskScore) {
+    var score = document.getElementById('riskScore');
+    var numericScore = Number(riskScore) || 0;
+    var riskClass = getRiskClass(numericScore);
+    var displayValue;
+
+    if (riskClass === 'safe') {
+        displayValue = Math.round(100 - numericScore);
+        score.textContent = displayValue;
+        document.querySelector('.score-ring .ring span').textContent = '% SAFE';
+    } else {
+        displayValue = Math.round(numericScore);
+        score.textContent = displayValue;
+        document.querySelector('.score-ring .ring span').textContent = '/100 RISK';
+    }
+
+    updateRiskProgress(displayValue, riskClass);
+}
+
+function updateResultTitle(classification) {
+    document.getElementById('resultTitle').textContent = classification;
+}
+
+function updateResultDescription(classification) {
+    var resultDescription = document.getElementById('resultDescription');
+    var text = (classification || '').toLowerCase();
+
+    resultDescription.textContent = text.includes('phishing')
+        ? 'This content shows characteristics commonly associated with phishing or malicious activity.'
+        : 'This content appears legitimate based on the ThreatLens security analysis.';
+}
+
+function clearFlags() {
+    var flags = document.getElementById('resultFlags');
+    flags.innerHTML = '';
+    return flags;
+}
+
+function addFlag(flags, text, type) {
+    var flag = document.createElement('span');
+    flag.textContent = text;
+    if (type) flag.classList.add(type);
+    flags.appendChild(flag);
+}
+
+// URL scan
+async function scanURL() {
+    var urlInput = document.getElementById('urlInput');
+    var url = urlInput.value.trim();
+
+    if (!url) {
+        alert('Please enter a URL.');
+        return;
+    }
+
+    if (!url.startsWith('http://') && !url.startsWith('https://')) {
+        url = 'https://' + url;
+    }
+
+    var response = await fetch('http://127.0.0.1:8000/scan/url', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ url: url })
+    });
+
+    if (!response.ok) {
+        throw new Error('Server returned status ' + response.status);
+    }
+
+    var result = await response.json();
+    console.log('ThreatLens URL result:', result);
+
+    var assessment = result.final_assessment;
+    if (!assessment) {
+        throw new Error('Invalid URL response: final_assessment is missing.');
+    }
+
+    var riskScore = Number(assessment.risk_score) || 0;
+
+    updateResultBadge(assessment.risk_level);
+    updateResultScore(riskScore);
+    updateResultTitle(assessment.classification);
+    updateResultDescription(assessment.classification);
+
+    var flags = clearFlags();
+
+    // Use the final risk score to decide which flags show:
+    // low risk -> only safe indicators, medium -> warnings, high -> danger.
+    var isLowRisk = riskScore < 50;
+    var isMediumRisk = riskScore >= 50 && riskScore < 75;
+    var isHighRisk = riskScore >= 75;
+
+    // Trusted domain
+    if (result.reputation && result.reputation.trusted_domain) {
+        addFlag(flags, '✓ Trusted domain: ' + result.reputation.registered_domain, 'safe');
+    } else if (isLowRisk) {
+        addFlag(flags, '✓ No trusted-domain match required', 'info');
+    } else {
+        addFlag(flags, '⚠ Unknown domain reputation', 'warning');
+    }
+
+    // ML assessment - don't show "Highly Suspicious" when the final
+    // assessment is low risk, since the individual models can disagree
+    // with the final result and the user should see the final call first.
+    if (result.model_analysis && result.model_analysis.ml_assessment) {
+        var mlAssessment = result.model_analysis.ml_assessment;
+
+        if (isHighRisk) {
+            addFlag(flags, '🚨 ML: ' + mlAssessment, 'danger');
+        } else if (isMediumRisk) {
+            addFlag(flags, '⚠️ ML: ' + mlAssessment, 'warning');
+        }
+    }
+
+    // URLhaus
+    if (result.threat_intelligence) {
+        if (result.threat_intelligence.urlhaus_found) {
+            addFlag(flags, '🚨 URLhaus threat detected', 'danger');
+        } else if (result.threat_intelligence.urlhaus_available) {
+            addFlag(flags, '✓ No known URLhaus record', 'safe');
+        }
+    }
+
+    // Security reasons
+    if (result.reasons && result.reasons.length > 0) {
+        result.reasons.forEach(function (reason) {
+            // For low-risk trusted URLs, skip generic ML-related warnings
+            if (isLowRisk) {
+                var reasonText = reason.toLowerCase();
+                if (
+                    reasonText.includes('structure contains patterns') ||
+                    reasonText.includes('text contains patterns') ||
+                    reasonText.includes('suspicious patterns') ||
+                    reasonText.includes('phishing')
+                ) {
+                    return;
+                }
+            }
+
+            if (isHighRisk) {
+                addFlag(flags, '🚨 ' + reason, 'danger');
+            } else if (isMediumRisk) {
+                addFlag(flags, '⚠️ ' + reason, 'warning');
+            } else {
+                addFlag(flags, '✓ ' + reason, 'safe');
+            }
+        });
+    }
+
+    if (isLowRisk) {
+        addFlag(flags, '✓ Low-risk assessment', 'safe');
+    }
+
+    // AI analysis
+    var aiText = document.getElementById('aiText');
+
+    if (isHighRisk) {
+        aiText.textContent = '🚨 ThreatLens identified this URL as high risk based on machine learning analysis, domain reputation, URL characteristics and available threat intelligence. Avoid interacting with the link or entering sensitive information.';
+    } else if (isMediumRisk) {
+        aiText.textContent = '⚠️ ThreatLens identified suspicious characteristics in this URL. Review the domain, URL structure and other security indicators carefully before interacting with the link.';
+    } else {
+        aiText.textContent = '✓ ThreatLens did not identify strong phishing indicators in this URL. The domain reputation and available security checks indicate a low-risk result. However, automated analysis cannot guarantee that a website is completely safe.';
+    }
+
+    document.getElementById('resultCard').scrollIntoView({ behavior: 'smooth' });
+}
+
+// Email scan
+async function scanEmail() {
+    var subjectInput = document.getElementById('emailSubject');
+    var bodyInput = document.getElementById('emailBody');
+    var subject = subjectInput.value.trim();
+    var body = bodyInput.value.trim();
+
+    if (!subject && !body) {
+        alert('Please enter an email subject or email body.');
+        return;
+    }
+
+    var response = await fetch('http://127.0.0.1:8000/scan/email', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ subject: subject, body: body })
+    });
+
+    if (!response.ok) {
+        throw new Error('Server returned status ' + response.status);
+    }
+
+    var result = await response.json();
+    console.log('ThreatLens Email result:', result);
+
+    // Email backend: 1 = Phishing / Spam, 0 = Legitimate
+    var isPhishing = result.prediction === 1;
+    var classification = result.classification || (isPhishing ? 'Phishing / Spam' : 'Legitimate');
+    var riskScore = Number(result.risk_score) || 0;
+
+    updateResultBadge(result.risk_level);
+    updateResultScore(riskScore);
+    updateResultTitle(classification);
+    updateResultDescription(classification);
+
+    var flags = clearFlags();
+
+    var isLowRisk = riskScore < 50;
+    var isMediumRisk = riskScore >= 50 && riskScore < 75;
+    var isHighRisk = riskScore >= 75;
+
+    // URLs found
+    if (result.urls_found && Number(result.urls_found) > 0) {
+        if (isHighRisk) {
+            addFlag(flags, '🚨 ' + result.urls_found + ' URL(s) detected', 'danger');
+        } else if (isMediumRisk) {
+            addFlag(flags, '⚠️ ' + result.urls_found + ' URL(s) detected', 'warning');
+        } else {
+            addFlag(flags, '🔗 ' + result.urls_found + ' URL(s) detected', 'info');
+        }
+    } else {
+        addFlag(flags, '✓ No URLs detected', 'safe');
+    }
+
+    // Security indicators
+    if (result.security_indicators && result.security_indicators.length > 0) {
+        result.security_indicators.forEach(function (indicator) {
+            var message = typeof indicator === 'string'
+                ? indicator
+                : (indicator.message || JSON.stringify(indicator));
+
+            var severity = indicator.severity || 'medium';
+
+            if (isHighRisk || severity === 'high') {
+                addFlag(flags, '🚨 ' + message, 'danger');
+            } else if (isMediumRisk || severity === 'medium') {
+                addFlag(flags, '⚠️ ' + message, 'warning');
+            } else {
+                addFlag(flags, '✓ ' + message, 'safe');
+            }
+        });
+    }
+
+    // URL analysis
+    if (result.url_analysis && result.url_analysis.length > 0) {
+        result.url_analysis.forEach(function (urlResult) {
+            var urlRisk = Number(urlResult.risk_score) || 0;
+
+            if (urlResult.classification && urlResult.classification.toLowerCase().includes('phishing')) {
+                addFlag(flags, '🚨 Suspicious URL detected', 'danger');
+            } else if (urlRisk >= 30) {
+                addFlag(flags, '⚠️ Suspicious URL detected', 'warning');
+            }
+        });
+    }
+
+    // Final risk confirmation
+    if (isLowRisk) {
+        addFlag(flags, '✓ Low-risk assessment', 'safe');
+    } else if (isMediumRisk) {
+        addFlag(flags, '⚠️ Medium-risk assessment', 'warning');
+    } else {
+        addFlag(flags, '🚨 High-risk assessment', 'danger');
+    }
+
+    // AI analysis
+    var aiText = document.getElementById('aiText');
+
+    if (isHighRisk) {
+        aiText.textContent = '🚨 ThreatLens detected characteristics strongly associated with phishing or spam in this email. Review the sender, links and requested actions carefully before responding or providing sensitive information.';
+    } else if (isMediumRisk) {
+        aiText.textContent = '⚠️ ThreatLens detected suspicious characteristics in this email. Review the sender, links, urgency and requested actions carefully before responding.';
+    } else {
+        aiText.textContent = '✓ ThreatLens did not identify strong phishing or spam indicators in this email. However, automated analysis cannot guarantee that an email is completely safe.';
+    }
+
+    document.getElementById('resultCard').scrollIntoView({ behavior: 'smooth' });
+}
+
+// Scan button
+document.getElementById('scanBtn').addEventListener('click', async function () {
+    var activeTab = document.querySelector('.tab.active');
+    var scanType = activeTab.getAttribute('data-type');
+    var scanButton = document.getElementById('scanBtn');
+
+    scanButton.disabled = true;
+    scanButton.innerHTML = 'SCANNING...';
+
+    try {
+        if (scanType === 'url') {
+            await scanURL();
+        } else {
+            await scanEmail();
+        }
+    } catch (error) {
+        console.error('ThreatLens scan error:', error);
+        alert('Unable to complete the scan. Make sure FastAPI is running on port 8000.');
+    } finally {
+        scanButton.disabled = false;
+        scanButton.innerHTML = 'SCAN FOR THREATS &rarr;';
+    }
+});
+
+</script>
+
+</body>
+</html>
