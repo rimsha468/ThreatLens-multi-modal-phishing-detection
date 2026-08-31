@@ -24,17 +24,12 @@ backend/
     threat_intelligence.py       # URLhaus lookup for a submitted URL
 
 data/
-    PhiUSIIL_Phishing_URL_Dataset.csv   # URL training data actually used by the notebook
-    LegitPhish.csv                       # Additional URL dataset (not currently wired into training)
-    new_data_urls.csv                    # Raw candidate URL data for future expansion
-    clean_url_dataset.csv               # Output of audit_url_dataset.py (currently unused by training)
     phishing_email_dataset.csv          # Raw email dataset
     processed/
         email_clean.csv                  # Cleaned email training data (used by train_email_model.py)
     ReadMe.md.txt                        # (dataset-specific notes)
 
 ML/
-    audit_url_dataset.py            # Cleans new_data_urls.csv -> clean_url_dataset.csv (see note below)
     test_url_generalization.py      # Curated sanity/generalization test suite for the hybrid URL model
     train_email_model.py            # Trains and selects the email phishing classifier
 
@@ -43,7 +38,6 @@ models/
     url_gb_model.pkl                 # Gradient Boosting URL model
     url_xgb_model.json               # XGBoost URL model (native format, not pickle)
     phishing_email_model.pkl         # Email phishing classifier (TF-IDF + classifier pipeline)
-    phishing_url_text_model.pkl      # Optional second URL model — not built yet (see below)
 
 frontend/
     index.html                       # UI
@@ -252,14 +246,6 @@ Dependencies observed across the codebase: `fastapi`, `uvicorn`,
 - [x] URL detection: RF/GB/XGB hybrid ensemble trained on PhiUSIIL
 - [x] Email detection: TF-IDF + best-of-3 classifier trained
 - [x] Threat intelligence: URLhaus lookup integrated
-- [x] Trusted-domain override for well-known sites
-- [ ] Build the optional URL text model (`phishing_url_text_model.pkl`)
-      referenced but not yet trained in `main.py`
-- [ ] Decide whether to fold `LegitPhish.csv` / `new_data_urls.csv` into
-      URL training, and if so, wire `audit_url_dataset.py`'s cleaned
-      output into the training notebook
 - [ ] Consider a domain-grouped train/test split for the URL model (the
       current split is row-level random, not domain-grouped)
-- [ ] Wire frontend ↔ backend end-to-end
-- [ ] Tighten CORS before any public deployment
 - [ ] Deployment (containerize FastAPI backend, host frontend)
