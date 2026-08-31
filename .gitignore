@@ -1,0 +1,23 @@
+# Python
+__pycache__/
+*.py[cod]
+
+# Virtual environment
+.env
+.venv/
+venv/
+
+# PyCharm
+.idea/
+*.iml
+
+# Dataset
+data/
+*.csv
+
+# Environment variables
+.env
+
+# OS files
+.DS_Store
+Thumbs.db
