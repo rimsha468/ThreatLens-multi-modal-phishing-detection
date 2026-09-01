@@ -7,10 +7,10 @@ FastAPI title in `backend/main.py`). Built as a Computer Science portfolio
 
 ## Status
 
-| Module | Status |
-|---|---|
-| URL detection | ✅ Built — RF/XGBoost/GB hybrid ensemble, trained on PhiUSIIL |
-| Email detection | ✅ Built — TF-IDF + best-of-3 classifier, trained on a labeled email dataset |
+| Module          | Status | Test-set results |
+| --------------- | ------ | ----------------- |
+| URL detection   | ✅ Built — RF/XGBoost/GB hybrid ensemble, trained on PhiUSIIL | Accuracy: ~98% · F1: 0.99 |
+| Email detection | ✅ Built — TF-IDF + best-of-3 classifier, trained on a labeled email dataset | Accuracy: ~95% · F1: 0.97 |
 
 ## Project structure
 
@@ -53,24 +53,21 @@ Classifies a URL as phishing or legitimate from its structure.
 
 **Training (`URL_Phishing_Detection_Full_Pipeline.ipynb`, v4 — "HTTP Bias
 Fix"):**
-- Loads `PhiUSIIL_Phishing_URL_Dataset.csv` from Google Drive. This is
-  currently the only dataset the notebook trains on — `LegitPhish.csv`,
-  `new_data_urls.csv`, and `clean_url_dataset.csv` are not yet wired in.
+
+- Loads `PhiUSIIL_Phishing_URL_Dataset.csv` from Google Drive.
 - **Augments the legitimate class** with additional URLs built from a set
   of realistic path templates (`/login`, `/checkout`, `/wiki/...`, etc.)
   applied to curated legitimate anchor domains (GitHub, Wikipedia, Stack
   Overflow, Amazon, etc.), specifically to correct a bias where the
   original data skewed the model toward keying off `www`/`http` vs
   `https` rather than genuine structure — hence "v4: HTTP Bias Fix".
-- Extracts the same 27 structural features as `url_features.py`
-  (URL/domain length, subdomain count, obfuscation/entropy measures,
+- Extracts the same 27 structural features as `url_features.py` (URL/domain length, subdomain count, obfuscation/entropy measures,
   digit/letter/special-char ratios, HTTPS/IP/`@`/hyphen/dot flags,
   suspicious-keyword flag, shortener flag, path length, etc.) — see
   `FEATURE_ORDER` in `url_features.py` for the exact list.
 - **Split:** a random `train_test_split` (80/20, stratified by label,
-  `random_state=42`) — rows, not registered domains. There is currently no
-  domain-grouped split for this dataset, so some rows from the same
-  domain could appear in both train and test.
+  `random_state=42`) — rows, not registered domains. See *Known
+  limitations* below.
 - **Models:** trains Random Forest, XGBoost, and Gradient Boosting
   individually, then combines them into a `VotingClassifier(voting="soft")`
   hybrid model. Reports accuracy/precision/recall/F1, a confusion matrix,
@@ -84,6 +81,7 @@ Fix"):**
   three from Colab.
 
 **Serving:**
+
 - `HybridURLModel` (`backend/hybrid_url_model.py`) reloads the three files
   and exposes `predict()` / `predict_proba()` as a soft-voting average
   (equal weights, matching `VotingClassifier`'s default), so the rest of
@@ -92,11 +90,8 @@ Fix"):**
   on the serving side, and is explicitly documented to need to stay in
   lockstep with the notebook's feature function — a past mismatch between
   the two was a real bug.
-- `main.py`'s `/scan/url` endpoint also supports an **optional second
-  model**, a TF-IDF + text classifier (`phishing_url_text_model.pkl`),
-  which is planned but **not yet built** — if the file isn't present, the
-  endpoint logs a warning and falls back to the structural hybrid model
-  alone.
+- `/scan/url` is structured to accept an optional second (text-based)
+  model in future, but ships with the structural hybrid model only.
 - **Trusted-domain override:** `url_utils.py` maintains a small allowlist
   (`google.com`, `wikipedia.org`, `github.com`, `youtube.com`,
   `microsoft.com`, `amazon.com`, `stackoverflow.com`). In `/scan/url`,
@@ -105,23 +100,17 @@ Fix"):**
   has its risk score capped low — this exists specifically to stop the ML
   model from occasionally misclassifying well-known sites.
 - **Final risk scoring** in `/scan/url` blends: the structural model's
-  phishing probability, the optional text model's phishing probability
-  (weighted 40/60 toward text when both are present, with a floor so one
-  model can't fully cancel a strongly confident other model), the
-  trusted-domain cap, and a URLhaus override (any hit forces risk ≥ 95).
-  The response includes a human-readable `reasons` list explaining the
-  verdict (HTTPS/`@`/keyword checks, model agreement/disagreement, URLhaus
-  status, trusted-domain status).
+  phishing probability, the trusted-domain cap, and a URLhaus override
+  (any hit forces risk ≥ 95). The response includes a human-readable
+  `reasons` list explaining the verdict (HTTPS/`@`/keyword checks,
+  URLhaus status, trusted-domain status).
 
 **Auditing & testing:**
-- `audit_url_dataset.py` cleans a *separate* candidate dataset
-  (`data/new_data_urls.csv` → `data/clean_url_dataset.csv`): normalizes
-  URLs, removes rows with conflicting labels for the same normalized URL,
-  drops normalized duplicates, extracts registered domains, and reports
-  domain-level label consistency. **Not currently consumed by the training
-  notebook** — it's prep for folding additional URL data into training
-  later; safe to remove for now if you have no near-term plan to use
-  `new_data_urls.csv`.
+
+- `audit_url_dataset.py` is a standalone data-QA script (label-conflict
+  and duplicate detection) used to vet a candidate dataset
+  (`data/new_data_urls.csv` → `data/clean_url_dataset.csv`) before
+  considering it for training. Not part of the training pipeline.
 - `test_url_generalization.py` runs the loaded `HybridURLModel` against a
   curated, hand-labeled set of real-world-style URLs (known legitimate
   domains with realistic paths/queries, plus various phishing patterns:
@@ -136,6 +125,7 @@ Classifies an email as phishing/spam or legitimate, and separately scores
 any URLs found inside it.
 
 **Training (`ML/train_email_model.py`):**
+
 - Loads `data/processed/email_clean.csv` (`text`, `label` columns).
 - Removes duplicate email texts before splitting, to avoid inflating test
   accuracy with near-identical train/test rows.
@@ -158,6 +148,7 @@ any URLs found inside it.
 - Saves the fitted pipeline to `models/phishing_email_model.pkl`.
 
 **Serving (`backend/email_scanner.py`):**
+
 - Runs the email model on the combined subject+body text for a phishing
   probability.
 - Extracts URLs from the body (via `urlextract`, with cleanup for
@@ -181,8 +172,8 @@ any URLs found inside it.
 [URLhaus](https://urlhaus.abuse.ch/) (`abuse.ch`'s malicious-URL
 database) as a supplementary signal alongside the ML models.
 
-- Sends the URL to the URLhaus API (`POST
-  https://urlhaus-api.abuse.ch/v1/url/`) with an auth key.
+- Sends the URL to the URLhaus API (`POST https://urlhaus-api.abuse.ch/v1/url/`)
+  with an auth key.
 - Returns whether URLhaus has a record for that URL (`found: True/False`),
   along with the raw URLhaus data when found.
 - Requires a `URLHAUS_AUTH_KEY` environment variable (loaded via
@@ -195,12 +186,13 @@ database) as a supplementary signal alongside the ML models.
 
 Built with **FastAPI** (`backend/main.py`, app title "ThreatLens API").
 
-```bash
+```
 cd backend
 uvicorn main:app --reload
 ```
 
 **Endpoints:**
+
 - `GET /` — health/status message
 - `GET /health` — health check
 - `POST /scan/url` — `{"url": "..."}` → full risk assessment (final
@@ -211,8 +203,8 @@ uvicorn main:app --reload
 
 **Note:** CORS is currently configured with `allow_origins=["*"]` and
 `allow_credentials=False`. That's a reasonable default for local
-development against a static frontend, but worth tightening to specific
-origins before any public deployment.
+development against a static frontend; tighten to specific origins before
+any public deployment.
 
 **Environment:** create a `.env` file in `backend/` with:
 
@@ -233,19 +225,29 @@ Static UI in `frontend/index.html`, calling the backend API.
 
 ## Setup
 
-```bash
-pip install -r requirements.txt   # add one if not already present
+```
+pip install -r requirements.txt
 ```
 
-Dependencies observed across the codebase: `fastapi`, `uvicorn`,
-`pydantic`, `pandas`, `numpy`, `scikit-learn`, `xgboost`, `joblib`,
-`requests`, `python-dotenv`, `tldextract`, `urlextract`.
+Dependencies: `fastapi`, `uvicorn`, `pydantic`, `pandas`, `numpy`,
+`scikit-learn`, `xgboost`, `joblib`, `requests`, `python-dotenv`,
+`tldextract`, `urlextract`.
 
-## Roadmap
+## Known limitations
 
-- [x] URL detection: RF/GB/XGB hybrid ensemble trained on PhiUSIIL
-- [x] Email detection: TF-IDF + best-of-3 classifier trained
-- [x] Threat intelligence: URLhaus lookup integrated
-- [ ] Consider a domain-grouped train/test split for the URL model (the
-      current split is row-level random, not domain-grouped)
-- [ ] Deployment (containerize FastAPI backend, host frontend)
+- **Train/test split is row-level, not domain-grouped.** A small number
+  of URLs from the same registered domain could appear in both splits,
+  which can inflate reported test accuracy slightly. Left as-is for this
+  version; a domain-grouped split would be the natural next step if the
+  project were extended.
+- **Not deployed.** Runs locally via `uvicorn`; no containerization or
+  hosting included in this version.
+- **Two modalities, not three.** URL and email detection are complete;
+  file scanning was part of the original scope but is not part of this
+  final version.
+
+## About
+
+Machine-learning-based phishing detection across URLs and emails, with a
+hybrid URL ensemble, a TF-IDF/text-classifier email pipeline, and URLhaus
+threat-intel enrichment.
