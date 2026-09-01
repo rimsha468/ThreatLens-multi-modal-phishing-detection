@@ -42,7 +42,7 @@ models/
 frontend/
     index.html                       # UI
 
-URL_Phishing_Detection_Full_Pipeline.ipynb   # URL model training notebook (Colab, v4)
+ThreatLens_Training_Script.ipynb   # URL model training notebook (Colab, v4)
 ```
 
 ## Modules
