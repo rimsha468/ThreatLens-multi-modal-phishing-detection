@@ -51,7 +51,7 @@ ThreatLens_Training_Script.ipynb   # URL model training notebook (Colab, v4)
 
 Classifies a URL as phishing or legitimate from its structure.
 
-**Training (`URL_Phishing_Detection_Full_Pipeline.ipynb`, v4 — "HTTP Bias
+**Training (`ThreatLens_Training_Script.ipynb`, v4 — "HTTP Bias
 Fix"):**
 
 - Loads `PhiUSIIL_Phishing_URL_Dataset.csv` from Google Drive.
