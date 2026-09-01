@@ -9,8 +9,8 @@ FastAPI title in `backend/main.py`). Built as a Computer Science portfolio
 
 | Module          | Status | Test-set results |
 | --------------- | ------ | ----------------- |
-| URL detection   | ✅ Built — RF/XGBoost/GB hybrid ensemble, trained on PhiUSIIL | Accuracy: ~98% · F1: 0.99 |
-| Email detection | ✅ Built — TF-IDF + best-of-3 classifier, trained on a labeled email dataset | Accuracy: ~95% · F1: 0.97 |
+| URL detection   | ✅ Built — RF/XGBoost/GB hybrid ensemble, trained on PhiUSIIL | Accuracy: ~98% · F1: 0.97 |
+| Email detection | ✅ Built — TF-IDF + best-of-3 classifier, trained on a labeled email dataset | Accuracy: ~95% · F1: 0.94 |
 
 ## Project structure
 
